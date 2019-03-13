@@ -3,7 +3,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#define INDEX_HASH_WIDTH 8
+#define INDEX_HASH_WIDTH 4
 #define INDEX_POSITION_WIDTH 6
 #define INDEX_ENTRY_WIDTH (INDEX_HASH_WIDTH + INDEX_POSITION_WIDTH)
 

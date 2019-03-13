@@ -1,6 +1,18 @@
-[CrackStation.net](http://crackstation.net/)'s Lookup Tables
+[CrackStation.net](http://crackstation.net/)'s Lookup Tables *modified by Powback*
 ============================================================
 
+This is my FNV hash cracker. It's producing the smallest lookup table possible, compared to it's enormous output size. 
+10 bytes are stored for each entry.
+4 byte hash, 6 byte hash index.
+
+Decrypted hash is calculated based on the index of the original bruteforce entry, then hashes again for confirmation. 
+
+I left some test and debug files in in here just for fun.
+
+Supports searching through multiple independently sorted databases. Also Partial Matches if you're up for it.
+
+
+Original README:
 Introduction
 ------------
 

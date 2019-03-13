@@ -1,0 +1,39 @@
+1pTransform: 1025692456
+3pTransform: -1534403542
+InputModifiers: -773028713
+WeaponChange: 2014598401
+LowAmmo: 1376693759
+AmmoReplenished:  2118323320
+ShowCrosshair:  -2118973718
+HideCrosshair:  856533193
+FootPlantRight:  407629264
+FootPlantLeft: -637618101
+EnableIRNV: 1190952711
+DisableIRNV: 1149346194
+AmmoBoostL21: 935536193
+AmmoBoostL11: 935536354
+GrenadeBoostL11: -348796110
+HealSpeedBoostL11: -425860021
+SprintBoostL11: -1169261042
+SuppressionBoostL11: -110972363
+SuppressionResistL11: -1425472262
+SuppressionResistL21: -1425472423
+ExplosiveResistL21: 381440295
+GrenadeBoostL21: -348796271
+GrenadeBoostL11: 1371600388
+
+SprintBoost1 : 984915155
+HealSpeedBoostL21: -425859992
+SuppressionBoostL21: -110972330
+ExplosiveBoostL11: -2130082933
+ExplosiveBoostL21: -2130082904
+Alt_Velocity: 258270452
+OnCriticalHitOriginatorSignatureValue: -1898136631
+OnPlayerEnterPassenger:  -152898635
+OnPlayerEnterDriver:  -1163693823
+Crosshair:  587907177
+
+Hips : 2089153255
+InVehicleFreelook : 800896297
+1pAnimatable : 345364432
+3pAnimatable : -1371800174

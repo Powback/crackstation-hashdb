@@ -14,7 +14,7 @@
 
 require_once('MoreHashes.php');
 
-define("INDEX_ENTRY_SIZE", 6+8);
+define("INDEX_ENTRY_SIZE", 6+4);
 
 class IndexFileException extends Exception {}
 class DictFileException extends Exception {}
@@ -26,7 +26,7 @@ class HashCrackResult
 {
     private $plaintext;
     private $given_hash_raw;
-    private $full_hash_raw;
+    public $full_hash_raw;
     private $algorithm_name;
 
     function __construct($plaintext, $given_hash_raw, $full_hash_raw, $algorithm_name)
@@ -65,16 +65,18 @@ class HashCrackResult
 
 class LookupTable
 {
+
     private $index;
     private $dict;
     private $hasher;
     private $cache = array();
     private $index_count;
+    private $var;
 
     // The minimum length of prefix that needs to match for it to be considered
     // a "partial match." This value must not be greater than 8, since only
     // the 8 leading bytes of the hash are stored in the index.
-    const PARTIAL_MATCH_PREFIX_BYTES = 8;
+    const PARTIAL_MATCH_PREFIX_BYTES = 3;
 
     public function __construct($index_path, $dict_path, $hashtype)
     {
@@ -95,6 +97,8 @@ class LookupTable
         if($size % INDEX_ENTRY_SIZE != 0)
             throw new IndexFileException("Invalid index file");
         $this->index_count = $size / INDEX_ENTRY_SIZE;
+
+        $this->var = File("../events_v7.txt");
     }
 
     public function __destruct()
@@ -143,7 +147,7 @@ class LookupTable
             while($this->hashcmp($this->getIdxHash($this->index, $find), $hash_binary) == 0)
             {
                 $position = $this->getIdxPosition($this->index, $find);
-                $word = $this->getWordAt($this->dict, $position);
+                $word = $this->GetResult($position);
                 $full_hash_raw = $this->hasher->hash($word, true);
                 $results[] = new HashCrackResult(
                     $word,
@@ -167,7 +171,7 @@ class LookupTable
 
     private function hashcmp($hashA, $hashB)
     {
-        for($i = 0; $i < self::PARTIAL_MATCH_PREFIX_BYTES && $i < 8; $i++)
+        for($i = 0; $i < self::PARTIAL_MATCH_PREFIX_BYTES && $i < 4; $i++)
         {
             if($hashA[$i] < $hashB[$i])
                 return -1;
@@ -182,9 +186,9 @@ class LookupTable
         if(array_key_exists($index, $this->cache))
             return $this->cache[$index];
 
-        fseek($file, $index * (6+8));
-        $hash = fread($file, 8);
-        if (strlen($hash) == 8) {
+        fseek($file, $index * (6+4));
+        $hash = fread($file, 4);
+        if (strlen($hash) == 4) {
             $this->cache[$index] = $hash;
             return $hash;
         } elseif (strlen($hash) == 0) {
@@ -203,20 +207,24 @@ class LookupTable
 
     private function getIdxPosition($file, $index)
     {
-        fseek($file, $index * (6+8) + 8);
+        fseek($file, $index * (6+4) + 4);
+        
+        
         $binary = fread($file, 6);
-        $value = 0;
-        for($i = 5; $i >= 0; $i--)
-        {
-            $value = $value << 8;
-            $value += ord($binary[$i]);
-        }
-        return $value;
+        $binary[5] = "\00"; 
+        $binary[6] = "\00"; 
+        $binary[7] = "\00"; 
+        $value = Unpack('P', $binary);
+        //echo $value[1] . "\n";
+        return $value[1];
+
     }
 
     private function getHashBinary($hash)
     {
+
         if (preg_match('/^([A-Fa-f0-9]{2})+$/', $hash) !== 1) {
+
             throw new HashFormatException("Hash is not a valid hex string.");
         }
         $binary = pack("H*", $hash);
@@ -230,6 +238,46 @@ class LookupTable
     {
         fseek($handle, 0, SEEK_END);
         return ftell($handle);
+    }
+
+    private function GetResult($input) {
+
+        //$var = array("a","b","c","d");
+        $count = count($this->var);
+        //echo "Count: " . $count . "\n";
+        //echo log($input*2+1)/log($count);
+       
+        $level = floor(log($input)/log($count));
+        
+
+        //echo "Level is: " . $level . "\n";
+        //sleep(1000);
+
+        $subtract = $level;
+        $corInput = $input;
+
+        while($subtract > 0) {
+            $corInput = $corInput - $count ** $subtract;
+              ///echo "Calculating relative number: " . $corInput . "\n";
+            $subtract-=1;
+        }
+        //echo "Relative pos calculated! It is: " . $corInput . "\n";
+        $level = $level+1;
+        $i = 0;
+        $out = "";
+
+
+        while( $i < $level ) {
+            //echo "i: " . $i . "\n";
+            $a = ($count**$i);
+            $b = ($corInput/$a);
+            $sec = floor($b%$count);
+            $out = $this->var[$sec] . $out;
+            //echo "The " . $i . "th number is: " . $sec . " |  " . $this->var[$sec] . "\n";
+            $i+=1;
+        }
+        //echo $input . " | " . trim(preg_replace('/\s\s+/', '', $out)) . "\n";
+        return trim(preg_replace('/\s\s+/', '', $out));
     }
 
 }

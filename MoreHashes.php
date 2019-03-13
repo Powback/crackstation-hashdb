@@ -1,4 +1,7 @@
 <?php
+include("int_helper.php");
+
+define ("FNV_offset_basis_32", 5381);
 
 interface HashAlgorithm
 {
@@ -105,6 +108,34 @@ class MD5MD5HexHashAlgorithm implements HashAlgorithm
         return "md5(md5)";
     }
 }
+class FNVHashAlgorithm implements HashAlgorithm
+{
+    public function hash($input, $raw)
+    {
+
+        $buf = str_split($input);
+        $hash = FNV_offset_basis_32;
+        foreach ($buf as $chr)
+        {
+            $hash = intval32bits( $hash ) + intval32bits($hash << 5);
+            $hash = intval32bits($hash ^ ord($chr));
+        }
+        $hash = $hash & 0x0ffffffff;
+
+//        echo bin2hex(pack('N', intval32bits($hash)));
+        if($raw)
+            return pack('N', intval32bits($hash));
+
+        return intval32bits($hash);
+
+    }
+
+    public function getAlgorithmName()
+    {
+        return "FNV";
+    }
+}
+
 
 class MySQL41HashAlgorithm implements HashAlgorithm
 {
@@ -147,6 +178,9 @@ class MoreHashAlgorithms
             return new StandardHashAlgorithm($algorithm);
         } else {
             switch ($algorithm) {
+            case "FNV":
+                return new FNVHashAlgorithm();
+                break;
             case "LM":
                 return new LMHashAlgorithm();
                 break;
@@ -168,4 +202,14 @@ class MoreHashAlgorithms
         }
     }
 
+}
+
+function intval32bits($value)
+{
+    $value = ($value & 0xFFFFFFFF);
+
+    if ($value & 0x80000000)
+        $value = -((~$value & 0xFFFFFFFF) + 1);
+
+    return $value;
 }
